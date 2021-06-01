@@ -25,6 +25,7 @@ Runs rsim.run at intervals and combines the run to one output
 \seealso{
 Other Rpath functions: 
 \code{\link{MTI}()},
+\code{\link{RsimEndpoints}},
 \code{\link{adjust.fishing}()},
 \code{\link{adjust.forcing}()},
 \code{\link{adjust.scenario}()},

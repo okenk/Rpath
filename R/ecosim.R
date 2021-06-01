@@ -32,6 +32,7 @@ rsim.scenario <- function(Rpath, Rpath.params, years = 1:100){
   start_state <- rsim.state(params)
   forcing     <- rsim.forcing(params, years)  
   fishing     <- rsim.fishing(params, years)
+  fitting     <- rsim.fitting(params)
   stanzas     <- rsim.stanzas(Rpath.params, start_state, params)
   
   # Copy stanza base state to start_state
@@ -50,6 +51,7 @@ rsim.scenario <- function(Rpath, Rpath.params, years = 1:100){
               start_state = start_state,
               forcing     = forcing,
               fishing     = fishing,
+              fitting     = fitting,
               stanzas     = stanzas)
   
   class(rsim) <- 'Rsim.scenario'
@@ -193,6 +195,16 @@ rsim.forcing <- function(params, years){
   
   class(forcing) <- "Rsim.forcing"
   return (forcing)
+}
+
+#####################################################################################
+#'@export
+rsim.fitting <- function(params, years){
+  fitting <- list()
+  
+  
+  class(fitting) <- "Rsim.fitting"
+  return (fitting)
 }
 
 #####################################################################################

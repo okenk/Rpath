@@ -50,9 +50,9 @@ read.fitting.catch <- function(SCENE, filename){
 
 ################################################################################
 #'@export
-apply.fit.to.catch <- function(SCENE){
+fitcatch.to.forcecatch <- function(SCENE){
   SIM <- SCENE
-  SIM$fishing$ForcedEffort[] <- 0
+  #SIM$fishing$ForcedEffort[] <- 0
   SIM$fishing$ForcedCatch[matrix(c(SIM$fitting$Catch$Year, SIM$fitting$Catch$Group),
                           length(SIM$fitting$Catch$Year),2)] <- SIM$fitting$Catch$obs
   return(SIM)
@@ -76,11 +76,12 @@ rsim.plot.catch <- function(scene, run, species){
 ################################################################################
 #'@export
 rsim.plot.biomass <- function(scene, run, species){
-  qdat <- scene$fitting$Biomass[scene$fitting$Biomass$Group==species,]
-  survey_q <- 1
-  mn   <- qdat$obs/survey_q
-  up   <- mn + 1.96*qdat$sd/survey_q
-  dn   <- mn - 1.96*qdat$sd/survey_q 
+  bio.obj <- rsim.fit.obj(scene,run)$Biomass 
+  qdat <- bio.obj[bio.obj$Group==species,]
+    #survey_q <- 1
+  mn   <- qdat$obs_scaled #/survey_q
+  up   <- mn + 1.96*qdat$sd * qdat$survey_q #/survey_q
+  dn   <- mn - 1.96*qdat$sd * qdat$survey_q #/survey_q 
   tot  <- 0 #tot <- sum(qdat$fit)
   plot(as.numeric(rownames(run$annual_Biomass)),run$annual_Biomass[,species],type="l",
        ylim=c(0,max(up,run$annual_Biomass[,species])),xlab=tot,ylab="")
@@ -88,7 +89,6 @@ rsim.plot.biomass <- function(scene, run, species){
   points(as.numeric(qdat$Year),mn)
   segments(as.numeric(qdat$Year),y0=up,y1=dn)
 }
-
 #################################################################################
 #'@export
 rsim.fit.obj <- function(SIM,RES,verbose=TRUE){
@@ -106,35 +106,35 @@ rsim.fit.obj <- function(SIM,RES,verbose=TRUE){
   # We need to get variance-weighted survey means by species, for
   # calculating mean values needed for setting best-fit q
   inv_var <- 1.0/(sd*sd)
-  obs_sum <- tapply(obs*inv_var,as.character(SIM$fitting$Biomass$Group),sum)
-  inv_sum <- tapply(inv_var,as.character(SIM$fitting$Biomass$Group),sum)
+  obs_sum <- tapply(obs*inv_var, as.character(SIM$fitting$Biomass$Group),sum)
+  inv_sum <- tapply(inv_var,     as.character(SIM$fitting$Biomass$Group),sum)
   obs_mean <- obs_sum/inv_sum
   est_mean <- tapply(est,as.character(SIM$fitting$Biomass$Group),mean)
   survey_q <- ifelse(SIM$fitting$Biomass$Type=="absolute", 1.0,
               (obs_mean/est_mean)[as.character(SIM$fitting$Biomass$Group)])
-  est_scaled <-est*survey_q 
-  sdlog  <- sqrt(log(1.0+sd*sd/(obs*obs)))
-  sdiff  <- (log(obs)-log(est_scaled))/sdlog
+  obs_scaled <-obs*survey_q 
+  sdlog  <- sqrt(log(1.0+sd*sd*survey_q*survey_q/(obs_scaled*obs_scaled)))
+  sdiff  <- (log(obs_scaled)-log(est))/sdlog
   fit    <- SIM$fitting$Biomass$wt * (log(sdlog) + FLOGTWOPI + 0.5*sdiff*sdiff)
   if (verbose){
-    OBJ$Biomass <- cbind(SIM$fitting$Biomass,est,survey_q,est_scaled,sdiff,fit)
+    OBJ$Biomass <- cbind(SIM$fitting$Biomass,est,survey_q,obs_scaled,sdiff,fit)
   } else {
     OBJ$tot <- OBJ$tot + sum(fit)
   }
   
   # Catch compared (assumes all catch is clean, absolute values)
-#  est <- RES$annual_Catch[matrix(c(as.character(SIM$fitting$Catch$Year),as.character(SIM$fitting$Catch$Group)),
-#                              ncol=2)] + epsilon
-#  obs <- SIM$fitting$Catch$obs + epsilon
-#  sd  <- SIM$fitting$Catch$sd  + epsilon
-#  sdlog  <- sqrt(log(1.0+sd*sd/(obs*obs)))
-#  sdiff  <- (log(obs)-log(est))/sdlog
-#  fit    <- SIM$fitting$Catch$wt * (log(sdlog) + FLOGTWOPI + 0.5*sdiff*sdiff)
-#  if (verbose){
-#    OBJ$Catch <- cbind(SIM$fitting$Catch,est,sdiff,fit)
-#  } else {
-#    OBJ$tot <- OBJ$tot + sum(fit)
-#  }
+  est <- RES$annual_Catch[matrix(c(as.character(SIM$fitting$Catch$Year),as.character(SIM$fitting$Catch$Group)),
+                              ncol=2)] + epsilon
+  obs <- SIM$fitting$Catch$obs + epsilon
+  sd  <- SIM$fitting$Catch$sd  + epsilon
+  sdlog  <- sqrt(log(1.0+sd*sd/(obs*obs)))
+  sdiff  <- (log(obs)-log(est))/sdlog
+  fit    <- SIM$fitting$Catch$wt * (log(sdlog) + FLOGTWOPI + 0.5*sdiff*sdiff)
+  if (verbose){
+    OBJ$Catch <- cbind(SIM$fitting$Catch,est,sdiff,fit)
+  } else {
+    OBJ$tot <- OBJ$tot + sum(fit)
+  }
   
   # # RATION
   # obs <- SIM$fitting$ration$obs + epsilon
@@ -170,10 +170,36 @@ rsim.fit.obj <- function(SIM,RES,verbose=TRUE){
   
   return(OBJ)  
 }
+#################################################################################
+#'@export
+rsim.fit.table <- function(SIM,RES){
+  fitobj  <- rsim.fit.obj(SIM,RES,verbose=T)
+  Btmp <- tapply(fitobj$Biomass$fit,fitobj$Biomass$Group,sum)
+  Ctmp <- tapply(fitobj$Catch$fit,fitobj$Catch$Group,sum)
+  out <- rep(NA,length(SIM$params$spname)); names(out)<- SIM$params$spname
+  Biomass <- out; Biomass[names(Btmp)] <- Btmp
+  Catch <- out;   Catch[names(Ctmp)] <- Ctmp
+  return(data.frame(Biomass,Catch))
+}
+#################################################################################
+#'@export
+rsim.fit.obj.species <- function(SIM,RES,species=NULL){
+  OBJ <- list()
+  fitobj <- rsim.fit.obj(SIM,RES,verbose=T)
+  OBJ$Biomass <- fitobj$Biomass[fitobj$Biomass$Group%in%species,] 
+  OBJ$Catch   <- fitobj$Catch[fitobj$Catch$Group%in%species,]
+  return(OBJ)
+}
 
 #################################################################################
+#'@export
+rsim.fit.function <- function(mzero,SIM,years){
+  SIM$params$MzeroMort <- mzero
+  RES <- rsim.run(SIM, method="AB", years=years)
+  return(rsim.fit.obj(SIM,RES,verbose=F)$tot)
+}
 
-
+#################################################################################
 test<-function(){
 
 #Group	Year	Value	SD	Scale
