@@ -8,7 +8,9 @@ read.fitting.biomass <- function(SCENE, filename){
   years <- as.numeric(row.names(SCENE$fishing$ForcedFRate))
 
   cdat  <-read.csv(filename)
-  ccdat <-cdat[!is.na(cdat$Value)& cdat$Year %in% years ,]        
+  c0dat <-cdat[!is.na(cdat$Value)& cdat$Year %in% years ,]
+  ccdat <- c0dat[c0dat$Value>0 & c0dat$Stdev>0 ,]
+  
   #type <- as.character(rep("absolute",length(ccdat$YEAR)))
   ccdat$Year  <- as.character(ccdat$Year)
   ccdat$Group <- as.character(ccdat$Group) 
@@ -17,6 +19,7 @@ read.fitting.biomass <- function(SCENE, filename){
   sd   <- ifelse(as.numeric(ccdat$Scale)<0, as.numeric(ccdat$Stdev),
                  as.numeric(ccdat$Stdev) * as.numeric(ccdat$Scale))   
   wt   <- rep(1,length(obs))
+  
   SIM$fitting$Biomass <- cbind(ccdat,obs,sd,wt)
 
 return(SIM)
@@ -60,7 +63,7 @@ fitcatch.to.forcecatch <- function(SCENE){
 
 ################################################################################
 #'@export
-rsim.plot.catch <- function(scene, run, species){
+rsim.plot.catch <- function(run, species){
   qdat <- scene$fitting$Catch[scene$fitting$Catch$Group==species,]
   mn   <- qdat$obs
   up   <- mn + 1.96*qdat$sd
@@ -79,10 +82,10 @@ rsim.plot.biomass <- function(scene, run, species){
   bio.obj <- rsim.fit.obj(scene,run)$Biomass 
   qdat <- bio.obj[bio.obj$Group==species,]
     #survey_q <- 1
-  mn   <- qdat$obs_scaled #/survey_q
+  mn   <- qdat$obs_scaled #* qdat$survey_q   #/survey_q
   up   <- mn + 1.96*qdat$sd * qdat$survey_q #/survey_q
   dn   <- mn - 1.96*qdat$sd * qdat$survey_q #/survey_q 
-  tot  <- 0 #tot <- sum(qdat$fit)
+  tot  <- sum(qdat$fit)
   plot(as.numeric(rownames(run$annual_Biomass)),run$annual_Biomass[,species],type="l",
        ylim=c(0,max(up,run$annual_Biomass[,species])),xlab=tot,ylab="")
   mtext(side=2, line=2.2, paste(species,"biomass"), font=2, cex=1.0)
@@ -103,19 +106,21 @@ rsim.fit.obj <- function(SIM,RES,verbose=TRUE){
                                    ncol=2)] + epsilon
   obs <- SIM$fitting$Biomass$obs + epsilon
   sd  <- SIM$fitting$Biomass$sd  + epsilon
+  wt  <- SIM$fitting$Biomass$wt 
   # We need to get variance-weighted survey means by species, for
   # calculating mean values needed for setting best-fit q
   inv_var <- 1.0/(sd*sd)
-  obs_sum <- tapply(obs*inv_var, as.character(SIM$fitting$Biomass$Group),sum)
-  inv_sum <- tapply(inv_var,     as.character(SIM$fitting$Biomass$Group),sum)
+  obs_sum <- tapply(obs*inv_var*wt, as.character(SIM$fitting$Biomass$Group),sum)
+  inv_sum <- tapply(inv_var*wt,     as.character(SIM$fitting$Biomass$Group),sum)
   obs_mean <- obs_sum/inv_sum
   est_mean <- tapply(est,as.character(SIM$fitting$Biomass$Group),mean)
   survey_q <- ifelse(SIM$fitting$Biomass$Type=="absolute", 1.0,
-              (obs_mean/est_mean)[as.character(SIM$fitting$Biomass$Group)])
+              #(obs_mean/est_mean)[as.character(SIM$fitting$Biomass$Group)])
+              (est_mean/obs_mean)[as.character(SIM$fitting$Biomass$Group)])
   obs_scaled <-obs*survey_q 
   sdlog  <- sqrt(log(1.0+sd*sd*survey_q*survey_q/(obs_scaled*obs_scaled)))
   sdiff  <- (log(obs_scaled)-log(est))/sdlog
-  fit    <- SIM$fitting$Biomass$wt * (log(sdlog) + FLOGTWOPI + 0.5*sdiff*sdiff)
+  fit    <- wt * (log(sdlog) + FLOGTWOPI + 0.5*sdiff*sdiff)
   if (verbose){
     OBJ$Biomass <- cbind(SIM$fitting$Biomass,est,survey_q,obs_scaled,sdiff,fit)
   } else {
@@ -166,9 +171,11 @@ rsim.fit.obj <- function(SIM,RES,verbose=TRUE){
   # Final summation and return
   if(verbose){
     OBJ$tot <- sum(OBJ$Biomass$fit, OBJ$Catch$fit)# , OBJ$ration$fit, OBJ$diet$fit)
+    return(OBJ)
   }
-  
-  return(OBJ)  
+  else{
+    return(OBJ$tot)
+  }
 }
 #################################################################################
 #'@export
@@ -192,11 +199,39 @@ rsim.fit.obj.species <- function(SIM,RES,species=NULL){
 }
 
 #################################################################################
+#Internal Only
+rsim.fit.apply <- function(values, species, vartype, scene.params){
+  mzerodiff <- values[vartype=="mzero"]
+  mzero.sp  <- species[vartype=="mzero"]
+  
+  predvuls <- values[vartype=="predvul"]
+  names(predvuls) <- species[vartype=="predvul"]   
+  preddiff <- as.numeric(predvuls[scene.params$spname[scene.params$PreyTo+1]])
+  preddiff[is.na(preddiff)] <- 0
+  
+  preyvuls <- values[vartype=="preyvul"]
+  names(preyvuls) <- species[vartype=="preyvul"]   
+  preydiff <- as.numeric(preyvuls[scene.params$spname[scene.params$PreyFrom+1]])
+  preydiff[is.na(preydiff)] <- 0
+  
+  scene.params$MzeroMort[mzero.sp] <- scene.params$MzeroMort[mzero.sp] + mzerodiff
+  scene.params$VV <- (1 + exp(log(scene.params$VV-1) + preddiff + preydiff))
+  
+  return(scene.params)
+}
+#################################################################################
 #'@export
-rsim.fit.function <- function(mzero,SIM,years){
-  SIM$params$MzeroMort <- mzero
-  RES <- rsim.run(SIM, method="AB", years=years)
-  return(rsim.fit.obj(SIM,RES,verbose=F)$tot)
+rsim.fit.run <- function(values, species, vartype, scene, run_method, verbose=F, ...){
+  scene$params <- rsim.fit.apply(values, species, vartype, scene$params)
+  run.out <- rsim.run(scene, method=run_method, ...)
+  if(!verbose){ return(rsim.fit.obj(scene, run.out, FALSE))}
+  else{         return(run.out)}
+}
+#################################################################################
+#'@export
+rsim.fit.update <- function(values, species, vartype, scene){
+  scene$params <- rsim.fit.apply(values, species, vartype, scene$params) 
+  return(scene)
 }
 
 #################################################################################
