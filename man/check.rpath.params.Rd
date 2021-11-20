@@ -7,8 +7,10 @@
 check.rpath.params(Rpath.params)
 }
 \arguments{
-\item{Rpath.params}{R object containing the Rpath parameters.  This is generated
-either by the create.rpath.params or read.rpath.params functions.}
+\item{filename}{Name of the parameter file.  Can be the path to a .csv or an R
+object.}
+
+\item{parameter}{The type of parameter file you are checking.  Choices include}
 }
 \value{
 Checks Rpath parameter files for consistency.  An error message will be produced if one of
@@ -22,6 +24,7 @@ expected.
 \seealso{
 Other Rpath functions: 
 \code{\link{MTI}()},
+\code{\link{RsimEndpoints}},
 \code{\link{adjust.forcing}()},
 \code{\link{create.rpath.params}()},
 \code{\link{extract.node}()},
@@ -30,6 +33,8 @@ Other Rpath functions:
 \code{\link{rpath.groups}()},
 \code{\link{rpath.stanzas}()},
 \code{\link{rpath}()},
+\code{\link{rsim.plot}()},
+\code{\link{rsim.step}()},
 \code{\link{stanzaplot}()},
 \code{\link{webplot}()},
 \code{\link{write.Rpath}()},

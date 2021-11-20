@@ -41,9 +41,7 @@ Converts the outputs from Rpath into rates for use in Rsim.
 }
 \seealso{
 Other Rsim functions: 
-\code{\link{rsim.plot}()},
 \code{\link{rsim.run}()},
-\code{\link{rsim.scenario}()},
-\code{\link{rsim.step}()}
+\code{\link{rsim.scenario}()}
 }
 \concept{Rsim functions}
