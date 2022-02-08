@@ -22,6 +22,7 @@ expected.
 \seealso{
 Other Rpath functions: 
 \code{\link{MTI}()},
+\code{\link{RsimEndpoints}},
 \code{\link{adjust.forcing}()},
 \code{\link{create.rpath.params}()},
 \code{\link{extract.node}()},

@@ -37,8 +37,6 @@ Other Rpath functions:
 \code{\link{rpath.groups}()},
 \code{\link{rpath.stanzas}()},
 \code{\link{rpath}()},
-\code{\link{rsim.plot}()},
-\code{\link{rsim.step}()},
 \code{\link{stanzaplot}()},
 \code{\link{webplot}()},
 \code{\link{write.Rpath}()},

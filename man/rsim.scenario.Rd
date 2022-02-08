@@ -19,9 +19,9 @@ Returns an \code{Rsim.scenario} object that can be supplied to the
     \code{rsim.run} function.
 }
 \description{
-Uses a balanced \code{Rpath} model and creates a scenario consisting of 5 list objects:
-\code{params}, \code{start_state}, \code{forcing}, \code{fishing}, and 
-\code{stanzas}.
+Uses a balanced \code{Rpath} model and creates a scenario consisting of 6 list objects:
+\code{params}, \code{start_state}, \code{forcing}, \code{fishing}, 
+\code{fitting}, and \code{stanzas}.
 }
 \seealso{
 Other Rsim functions: 

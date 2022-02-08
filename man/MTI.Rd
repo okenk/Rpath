@@ -22,6 +22,7 @@ Need to edit.
 }
 \seealso{
 Other Rpath functions: 
+\code{\link{RsimEndpoints}},
 \code{\link{adjust.forcing}()},
 \code{\link{check.rpath.params}()},
 \code{\link{create.rpath.params}()},

@@ -28,6 +28,7 @@ Plots the biomass composition of multistanza groups from an Rpath.stanzas object
 \seealso{
 Other Rpath functions: 
 \code{\link{MTI}()},
+\code{\link{RsimEndpoints}},
 \code{\link{adjust.forcing}()},
 \code{\link{check.rpath.params}()},
 \code{\link{create.rpath.params}()},

@@ -22,6 +22,7 @@ Outputs basic parameters or mortalities to a .csv file.
 \seealso{
 Other Rpath functions: 
 \code{\link{MTI}()},
+\code{\link{RsimEndpoints}},
 \code{\link{adjust.forcing}()},
 \code{\link{check.rpath.params}()},
 \code{\link{create.rpath.params}()},

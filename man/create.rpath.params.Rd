@@ -28,6 +28,7 @@ multistanza, and pedigree parameters.
 \seealso{
 Other Rpath functions: 
 \code{\link{MTI}()},
+\code{\link{RsimEndpoints}},
 \code{\link{adjust.forcing}()},
 \code{\link{check.rpath.params}()},
 \code{\link{extract.node}()},
