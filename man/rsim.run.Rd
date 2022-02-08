@@ -21,6 +21,8 @@ Carries out the numerical integration of the Rsim alogrithms.
 \seealso{
 Other Rsim functions: 
 \code{\link{rsim.params}()},
-\code{\link{rsim.scenario}()}
+\code{\link{rsim.plot}()},
+\code{\link{rsim.scenario}()},
+\code{\link{rsim.step}()}
 }
 \concept{Rsim functions}

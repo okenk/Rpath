@@ -4,7 +4,7 @@
 \alias{write.Rpath}
 \title{Write function for Ecopath object}
 \usage{
-write.Rpath(x, file = NA, morts = F, ...)
+write.Rpath(x, file = NA, morts = F)
 }
 \arguments{
 \item{x}{Rpath model created by the ecopath() function.}
@@ -22,7 +22,6 @@ Outputs basic parameters or mortalities to a .csv file.
 \seealso{
 Other Rpath functions: 
 \code{\link{MTI}()},
-\code{\link{RsimEndpoints}},
 \code{\link{adjust.forcing}()},
 \code{\link{check.rpath.params}()},
 \code{\link{create.rpath.params}()},
@@ -32,8 +31,6 @@ Other Rpath functions:
 \code{\link{rpath.groups}()},
 \code{\link{rpath.stanzas}()},
 \code{\link{rpath}()},
-\code{\link{rsim.plot}()},
-\code{\link{rsim.step}()},
 \code{\link{stanzaplot}()},
 \code{\link{webplot}()},
 \code{\link{write.Rsim}()},

@@ -26,7 +26,6 @@ matrix file.
 \seealso{
 Other Rpath functions: 
 \code{\link{MTI}()},
-\code{\link{RsimEndpoints}},
 \code{\link{adjust.forcing}()},
 \code{\link{check.rpath.params}()},
 \code{\link{create.rpath.params}()},
@@ -35,8 +34,6 @@ Other Rpath functions:
 \code{\link{read.rpath.params}()},
 \code{\link{rpath.groups}()},
 \code{\link{rpath.stanzas}()},
-\code{\link{rsim.plot}()},
-\code{\link{rsim.step}()},
 \code{\link{stanzaplot}()},
 \code{\link{webplot}()},
 \code{\link{write.Rpath}()},

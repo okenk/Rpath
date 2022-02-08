@@ -13,8 +13,6 @@ create.rpath.params(group, type, stgroup = NA)
 Fleet = 3.}
 
 \item{stgroup}{Vector of multistanza group names.  Include NA for non-stanza groups.}
-
-\item{nstanzas}{Numeric vector of the number of stanzas per multistanza groups.}
 }
 \value{
 Outputs a list object of Rpath parameters which are populated with values 
@@ -30,7 +28,6 @@ multistanza, and pedigree parameters.
 \seealso{
 Other Rpath functions: 
 \code{\link{MTI}()},
-\code{\link{RsimEndpoints}},
 \code{\link{adjust.forcing}()},
 \code{\link{check.rpath.params}()},
 \code{\link{extract.node}()},
@@ -39,8 +36,6 @@ Other Rpath functions:
 \code{\link{rpath.groups}()},
 \code{\link{rpath.stanzas}()},
 \code{\link{rpath}()},
-\code{\link{rsim.plot}()},
-\code{\link{rsim.step}()},
 \code{\link{stanzaplot}()},
 \code{\link{webplot}()},
 \code{\link{write.Rpath}()},
