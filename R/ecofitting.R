@@ -63,7 +63,7 @@ fitcatch.to.forcecatch <- function(SCENE){
 
 ################################################################################
 #'@export
-rsim.plot.catch <- function(run, species){
+rsim.plot.catch <- function(scene, run, species){
   qdat <- scene$fitting$Catch[scene$fitting$Catch$Group==species,]
   mn   <- qdat$obs
   up   <- mn + 1.96*qdat$sd
