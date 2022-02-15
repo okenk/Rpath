@@ -345,8 +345,11 @@ rsim.params <- function(Rpath, mscramble = 2, mhandle = 1000, preyswitch = 1,
   simpar$spnum      <- 0:length(Rpath$Biomass) 
   
   #Energetics for Living and Dead Groups
-  #Reference biomass for calculating YY
-  simpar$B_BaseRef <- c(1.0, Rpath$Biomass) 
+  #B_BaseRef is "initial equlibrium" Reference biomass for calculating YY
+  #B_Initial, added Feb 2022, is to decouple initial state from
+  #reference biomass as they behave in two different ways.
+  simpar$B_BaseRef <- c(1.0, Rpath$Biomass)
+  simpar$B_Initial <- c(1.0, Rpath$Biomass)
   #Mzero proportional to (1-EE)
   simpar$MzeroMort <- c(0.0, Rpath$PB * (1.0 - Rpath$EE)) 
   #Unassimilated is the proportion of CONSUMPTION that goes to detritus.  
